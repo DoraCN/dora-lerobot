@@ -59,20 +59,20 @@ pip install -e ".[hilserl]"
   "env": {
     "name": "gym_hil",
     "task": "PandaPickCubeKeyboard-v0",
-    "fps": 8,
+    "fps": 30,
     "processor": {
       "reset": {
-        "control_time_s": 20.0,
+        "control_time_s": 60.0, # 采集一组数据的时间长度，经过测试下来60秒时间适合
         "fixed_reset_joint_positions": [0.0, 0.195, 0.0, -2.43, 0.0, 2.62, 0.785],
-        "reset_time_s": 2.0,
-        "terminate_on_success": true
+        "reset_time_s": 2.0, # 重置环境的时间
+        "terminate_on_success": false  # 是否运行终端结束，一般默认 false
       }
     }
   },
   "dataset": {
     "repo_id": "dora_lerobot/gym_hil",
     "task": "pick_cube",
-    "num_episodes_to_record": 5,
+    "num_episodes_to_record": 10, # 采集的全部组数，经过测试至少10组开始效果普遍会好起来
     "replay_episode": null,
     "push_to_hub": false
   },
