@@ -12,6 +12,9 @@
 - CUDA支持的GPU（推荐）
 - 至少8GB内存
 
+⚠️注意：经过验证测试的显卡有 Nvidia的40系列（推荐），30系列。  
+不支持50系列。
+
 ### 2. 安装Miniconda
 ```bash
 # 下载并安装Miniconda
