@@ -21,24 +21,27 @@ bash Miniconda3-latest-Linux-x86_64.sh
 
 ### 3. 创建虚拟环境
 ```bash
-# 创建Python 3.10环境
-conda create -y -n lerobot_v3 python=3.10
+# 创建Python 3.12环境
+conda create -y -n dora_lerobot python=3.12
 
 # 激活环境
-conda activate lerobot_v3
+conda activate dora_lerobot
 
 # 安装ffmpeg
 conda install ffmpeg -c conda-forge
 ```
 
-### 4. 安装LeRobot
+### 4. 安装Dora Lerobot
+
+⚠️注意：仍然是在 `conda` 的 `dora_lerobot` 环境下面操作
+
 ```bash
 # 克隆仓库
-git clone https://github.com/huggingface/lerobot.git
-cd lerobot
+git clone https://github.com/DoraCN/dora-lerobot.git
+cd dora-lerobot
 
 # 安装依赖
-pip install -e .
+pip install -e ".[hilserl]"
 ```
 
 ## 完整工作流程
@@ -64,7 +67,7 @@ pip install -e .
     }
   },
   "dataset": {
-    "repo_id": "jzzz/il_gym1",
+    "repo_id": "dora_lerobot/gym_hil",
     "task": "pick_cube",
     "num_episodes_to_record": 5,
     "replay_episode": null,
@@ -74,26 +77,48 @@ pip install -e .
   "device": "cuda"
 }
 ```
-其中修改 "repo_id": "jzzz/il_gym",为您本地的路径，通常本地会存储在/home/jzzz/.cache/huggingface/lerobot/jzzz/il_gym下。
+其中修改 `"repo_id"`: `"dora_lerobot/gym_hil"`,为您本地的路径，通常本地会存储在 `$HOME/.cache/huggingface/lerobot/dora_lerobot/gym_hil` 下。
 
 #### 2. 开始数据采集
 ```bash
 # 激活环境
-conda activate lerobot_v3
+conda activate dora_lerobot
 
 # 运行数据采集
 python -m lerobot.rl.gym_manipulator --config_path env_config_gym_hil_il.json 
 ```
 
 **键盘控制说明：**
-Keyboard controls:
-  - Arrow keys: Move in X-Y plane
-  - Shift and Shift_R: Move in Z axis
-  - Right Ctrl and Left Ctrl: Open and close gripper
-  - Enter: End episode with SUCCESS
-  - Backspace: End episode with FAILURE
-  - Space: Start/Stop Intervention
-  - ESC: Exit
+
+  - `方向键`：控制机械臂末端在X和Y轴上水平前后左右运动
+  - `左Shift`: Z轴向下
+  - `右Shift`: Z轴向上
+  - `左Ctrl`: 夹爪张开
+  - `右Ctrl`: 夹爪关闭
+  - `Enter`: 结束当前阶段的采集任务，并标记为成功状态
+  - `Backspace`: 结束当前阶段的采集任务，并标记为失败状态
+  - `空格键`: 开始/暂停当前状态
+  - `ESC`: 退出整个采集任务
+
+> ⚠️注意：    
+> **开始采集数据时，键盘控制之前必须通过按下 `空格键` 开始，否则仿真环境不响应任何按键。**
+
+⚠️此时遇到的常见问题：
+
+```bash
+# 问题一：
+ibEGL warning: MESA-LOADER: failed to open swrast: /usr/lib/dri/swrast_dri.so: cannot open shared object file: No such file or directory (search paths /usr/lib/x86_64-linux-gnu/dri:\$${ORIGIN}/dri:/usr/lib/dri, suffix _dri)    
+
+#解决方法：
+sudo mkdir /usr/lib/dri
+sudo ln -sf /usr/lib/x86_64-linux-gnu/dri/swrast_dri.so   dri/swrast_dri.so
+
+# 问题二：
+libGL error: MESA-LOADER: failed to open swrast: /home/dora/miniconda3/envs/lerobot_v3/bin/../lib/libstdc++.so.6: version GLIBCXX_3.4.30 not found (required by /lib/x86_64-linux-gnu/libLLVM-15.so.1) (search paths /usr/lib/x86_64-linux-gnu/dri:\$${ORIGIN}/dri:/usr/lib/dri, suffix _dri)    
+
+#解决方法
+sudo ln -sf /usr/lib/x86_64-linux-gnu/libstdc++.so.6   /home/dora/miniconda3/envs/当前的conda环境名称/lib/libstdc++.so.6
+```
 
 **采集建议：**
 - 至少采集5个完整的episode
@@ -106,11 +131,11 @@ Keyboard controls:
 #### 1. 训练ACT策略
 ```bash
 # 激活环境
-conda activate lerobot_v3
+conda activate dora_lerobot
 
 # 开始训练
 lerobot-train \
-  --dataset.repo_id=jzzz/il_gym \
+  --dataset.repo_id=dora_lerobot/gym_hil \
   --policy.type=act \
   --output_dir=outputs/train/il_gym \
   --job_name=il_gym \
@@ -123,7 +148,7 @@ lerobot-train \
 ```
 
 **训练参数说明：**
-- `--dataset.repo_id=jzzz/il_gym`：使用您采集的数据集
+- `--dataset.repo_id=dora_lerobot/gym_hil`：使用您采集的数据集
 - `--policy.type=act`：使用ACT（Action Chunking with Transformers）算法
 - `--output_dir=outputs/train/il_gym`：存放训练好的模型的地址
 - `--steps`：总训练步数
@@ -179,7 +204,7 @@ lerobot-train \
     }
   },
   "dataset": {
-    "repo_id": "jzzz/il_gym",
+    "repo_id": "dora_lerobot/gym_hil",
     "use_imagenet_stats": false
   },
   "policy": {
@@ -240,10 +265,10 @@ lerobot-train \
 #### 2. 运行策略推理
 ```bash
 # 激活环境
-conda activate lerobot_v3
+conda activate dora_lerobot
 
 # 运行推理
-python -m lerobot.rl.eval_policy --config_path=eval_config_minimal.json --policy.path="/home/jzzz/dora_ws/lerobot_v3/outputs/train/il_gym/checkpoints/005000/pretrained_model"
+python -m lerobot.rl.eval_policy --config_path=eval_config_minimal.json --policy.path="/home/jzzz/dora_ws/dora_lerobot/outputs/train/il_gym/checkpoints/005000/pretrained_model"
 ```
 
 **注意：** 请将路径中的 `005000` 替换为您实际训练的checkpoint步数。
@@ -280,11 +305,11 @@ python -m lerobot.rl.eval_policy --config_path=eval_config_minimal.json --policy
 #### ACT策略参数
 ```bash
 # 基础训练命令
-lerobot-train --dataset.repo_id=jzzz/il_gym --policy.type=act
+lerobot-train --dataset.repo_id=dora_lerobot/gym_hil --policy.type=act
 
 # 高级参数示例
 lerobot-train \
-  --dataset.repo_id=jzzz/il_gym \
+  --dataset.repo_id=dora_lerobot/gym_hil \
   --policy.type=act \
   --policy.chunk_size=50 \
   --policy.n_action_steps=50 \
@@ -301,7 +326,7 @@ lerobot-train \
 ```bash
 # 使用Weights & Biases监控训练
 wandb login
-lerobot-train --dataset.repo_id=jzzz/il_gym --policy.type=act --wandb.project=my_robot_project
+lerobot-train --dataset.repo_id=dora_lerobot/gym_hil --policy.type=act --wandb.project=my_robot_project
 ```
 
 ### 推理参数调优
@@ -337,7 +362,7 @@ lerobot-train --dataset.repo_id=jzzz/il_gym --policy.type=act --wandb.project=my
 #### 2. 数据集加载失败
 ```bash
 # 检查数据集是否存在
-python -c "from lerobot.datasets.lerobot_dataset import LeRobotDataset; ds = LeRobotDataset('jzzz/il_gym'); print(ds.meta)"
+python -c "from lerobot.datasets.lerobot_dataset import LeRobotDataset; ds = LeRobotDataset('dora_lerobot/gym_hil'); print(ds.meta)"
 ```
 
 #### 3. 模型加载失败
