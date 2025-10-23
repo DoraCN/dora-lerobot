@@ -3,7 +3,7 @@
     "type": "gym_manipulator",
     "name": "gym_hil",
     "task": "PandaPickCubeKeyboard-v0",
-    "fps": 8,
+    "fps": 30,
     "robot": null,
     "teleop": null,
     "processor": {
@@ -36,7 +36,7 @@
     }
   },
   "dataset": {
-    "repo_id": "jzzz/il_gym",
+    "repo_id": "dora_lerobot/gym_hil",
     "use_imagenet_stats": false
   },
   "policy": {

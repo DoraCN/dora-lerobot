@@ -80,7 +80,7 @@ pip install -e ".[hilserl]"
   "device": "cuda"
 }
 ```
-其中修改 `"repo_id"`: `"dora_lerobot/gym_hil"`,为您本地的路径，通常本地会存储在 `$HOME/.cache/huggingface/lerobot/dora_lerobot/gym_hil` 下。
+其中修改 `"repo_id"`: `"dora_lerobot/gym_hil"`,为您本地的路径(`此路径必须是本地没有，会自动创建。若存在会停止采集`)，通常本地会存储在 `$HOME/.cache/huggingface/lerobot/dora_lerobot/gym_hil` 下。
 
 #### 2. 开始数据采集
 ```bash
@@ -124,7 +124,7 @@ sudo ln -sf /usr/lib/x86_64-linux-gnu/libstdc++.so.6   /home/dora/miniconda3/env
 ```
 
 **采集建议：**
-- 至少采集5个完整的episode
+- 至少采集10个完整的episode
 - 每个episode包含完整的抓取-放置任务
 - 保持动作流畅，避免突然的急停
 - 确保任务成功完成（绿色提示）
@@ -154,8 +154,9 @@ lerobot-train \
 - `--dataset.repo_id=dora_lerobot/gym_hil`：使用您采集的数据集
 - `--policy.type=act`：使用ACT（Action Chunking with Transformers）算法
 - `--output_dir=outputs/train/il_gym`：存放训练好的模型的地址
-- `--steps`：总训练步数
+- `--steps=5000`：总训练步数
 - `--save_freq=1000`：多少步保存一个检查点
+- `--wandb.enable=false`: 不开启wandb
 - `--policy.push_to_hub=false`：不自动上传至huggingface仓库，保存在本地
 
 **训练过程：**
@@ -174,7 +175,7 @@ lerobot-train \
     "type": "gym_manipulator",
     "name": "gym_hil",
     "task": "PandaPickCubeKeyboard-v0",
-    "fps": 8,
+    "fps": 30,
     "robot": null,
     "teleop": null,
     "processor": {
@@ -271,7 +272,7 @@ lerobot-train \
 conda activate dora_lerobot
 
 # 运行推理
-python -m lerobot.rl.eval_policy --config_path=eval_config_minimal.json --policy.path="/home/jzzz/dora_ws/dora_lerobot/outputs/train/il_gym/checkpoints/005000/pretrained_model"
+python -m lerobot.rl.eval_policy --config_path=eval_config_minimal.json --policy.path="outputs/train/il_gym/checkpoints/005000/pretrained_model"
 ```
 
 **注意：** 请将路径中的 `005000` 替换为您实际训练的checkpoint步数。
